@@ -39,7 +39,8 @@ export default function App() {
     data: [0, 1, 2, 3, 4],
   });
 
-  useEffect(() => animateList(), [animateList, state]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => animateList(), [state]);
 
   const point = useRef(new Animated.ValueXY()).current;
 
@@ -63,10 +64,6 @@ export default function App() {
         // what is happening!
         // gestureState.d{x,y} will be set to zero now
         currentIdx.current = yToIndex(gestureState.y0);
-        currentY.current = gestureState.y0;
-        Animated.event([{y: point.y}], {useNativeDriver: false})({
-          y: gestureState.y0,
-        });
         active.current = true;
         setState(prev => ({
           ...prev,
