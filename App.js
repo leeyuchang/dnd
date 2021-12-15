@@ -1,12 +1,12 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
+  Animated,
+  FlatList,
+  PanResponder,
   StyleSheet,
   Text,
   View,
-  FlatList,
-  PanResponder,
-  Animated,
 } from 'react-native';
 
 function mutableMove(array, from, to) {
@@ -14,8 +14,8 @@ function mutableMove(array, from, to) {
     return array;
   }
 
-  let target = array[from];
-  let increment = to < from ? -1 : 1;
+  const target = array[from];
+  const increment = to < from ? -1 : 1;
 
   for (let k = from; k !== to; k += increment) {
     array[k] = array[k + increment];
@@ -42,6 +42,7 @@ export default function App() {
   useEffect(() => animateList(), [animateList, state]);
 
   const point = useRef(new Animated.ValueXY()).current;
+
   const currentY = useRef(0);
   const scrollOffset = useRef(0);
   const flatlistTopOffset = useRef(0);
@@ -58,6 +59,9 @@ export default function App() {
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
 
       onPanResponderGrant: (evt, gestureState) => {
+        // The gesture has started. Show visual feedback so the user knows
+        // what is happening!
+        // gestureState.d{x,y} will be set to zero now
         currentIdx.current = yToIndex(gestureState.y0);
         currentY.current = gestureState.y0;
         Animated.event([{y: point.y}], {useNativeDriver: false})({
@@ -69,7 +73,6 @@ export default function App() {
           dragging: true,
           draggingIdx: currentIdx.current,
         }));
-        // animateList();
       },
       onPanResponderMove: (evt, gestureState) => {
         currentY.current = gestureState.moveY;
@@ -103,7 +106,6 @@ export default function App() {
     if (!active.current) {
       return;
     }
-
     requestAnimationFrame(() => {
       // check y value see if we need to reorder
       const newIdx = yToIndex(currentY.current);
@@ -125,15 +127,12 @@ export default function App() {
         (scrollOffset.current + y - flatlistTopOffset.current) /
           rowHeight.current,
       );
-
       if (value < 0) {
         return 0;
       }
-
       if (value > state.data.length - 1) {
         return state.data.length - 1;
       }
-
       return value;
     },
     [state.data.length],
@@ -156,9 +155,9 @@ export default function App() {
         opacity: state.draggingIdx === index ? 0 : 1,
       }}>
       <View {...(noPanResponder ? {} : _panResponder.panHandlers)}>
-        <Text style={{fontSize: 28}}>@</Text>
+        <Text>@</Text>
       </View>
-      <Text style={{fontSize: 22, textAlign: 'center', flex: 1}}>{item}</Text>
+      <Text style={{textAlign: 'center', flex: 1}}>{item}</Text>
     </View>
   );
 
